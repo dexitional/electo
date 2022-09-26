@@ -6,9 +6,17 @@
     "start": "next start"
   },
   "dependencies": {
+    "express-fileupload": "^1.4.0",
+    "file-saver": "^2.0.5",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
     "next": "latest",
+    "next-connect": "^0.13.0",
     "react": "18.1.0",
-    "react-dom": "18.1.0"
+    "react-dom": "18.1.0",
+    "react-icons": "^4.4.0",
+    "socket.io": "^4.5.2",
+    "socket.io-client": "^4.5.2"
   },
   "devDependencies": {
     "@types/node": "17.0.35",
