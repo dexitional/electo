@@ -2,13 +2,14 @@ export const mysql = require("mysql");
 var util = require("util");
 var pool = mysql.createPool({
   multipleStatements: true,
-  connectionLimit: 1000,
+  connectionLimit: 1000000,
   host: "localhost",
-  port: 8889,
+  port: 3306,
   user: "root",
-  password: "root",
-  database: "P06",
+  password: "DHRCdodowa1",
+  database: "electo",
 });
+
 /*
 var pool = mysql.createPool({
     multipleStatements: true,
@@ -20,6 +21,7 @@ var pool = mysql.createPool({
     database : process.env.MYSQL_DB,
 });
 */
+
 pool.getConnection((err:any, conn:any) => {
   if (err) {
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
