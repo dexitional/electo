@@ -20,6 +20,7 @@ app.post((req,res) => {
   const { slug } = req.query
   if(slug == "admin") return API.authenticateAdmin(req,res)
   if(slug == "voter") return API.authenticateVoter(req,res)
+  if(slug == "ip") return API.getIp(req,res)
 })
 
 export default app;

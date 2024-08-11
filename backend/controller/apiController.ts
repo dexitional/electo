@@ -29,18 +29,27 @@ export default {
   },
 
   authenticateVoter: async (req:NextApiRequest, res:NextApiResponse) => {
-    const { username } = req.body;
+    let { username,password } = req.body;
     try {
-      var user = await API.verifyVoter(username);
+      username = username?.toUpperCase()
+      const forwarded:any = req.headers["x-forwarded-for"]
+      let ip = forwarded ? forwarded?.split(/, /)[0] : req.connection.remoteAddress;
+          ip = ip.replace(/::ffff:/gi,"").replace(/::/gi,"")
+      var user = await API.verifyVoter(username,password,ip);
       if (user) {
         if(user.vote_status == 1) {
           res.status(200).json({
             success: false,
             msg: "You have Voted !!",
           });
-        }else if(user.verified == 1){
-            const data = { ...user, photo: `/api/photos/?tag=${encodeURIComponent(username)}` }
-            res.status(200).json({ success: true, data });
+        } else if(user.logged_in == 1){
+          res.status(200).json({
+            success: false,
+            msg: "You are already Logged In !!",
+          });
+        } else if(user.verified == 1){
+          const data = { ...user, photo: `/api/photos/?tag=${encodeURIComponent(username)}` }
+          res.status(200).json({ success: true, data });
         } else {
           res.status(200).json({
             success: false,
@@ -81,12 +90,29 @@ export default {
     }
   },
 
+  getIp: async (req:NextApiRequest, res:NextApiResponse) => {
+    try {
+      const forwarded:any = req.headers["x-forwarded-for"]
+      let ip = forwarded ? forwarded?.split(/, /)[0] : req.connection.remoteAddress;
+          ip = ip.replace(/::ffff:/gi,"").replace(/::/gi,"")
+      console.log(ip)
+      res.status(200).json({ success: true, ip });
+    } catch (e) {
+      console.log(e);
+      res.status(200).json({ success: false, data: null, msg: "Please Check settings!" });
+    }
+  },
+
+
   /* ACTIVATION */
 
   activateVoter: async (req:NextApiRequest, res:NextApiResponse) => {
     try {
-      const { verify } = req.query
-      var data = await API.activateVoter(verify);
+      const { verify,uid } = req.query
+      const forwarded:any = req.headers["x-forwarded-for"]
+      let ip = forwarded ? forwarded?.split(/, /)[0] : req.connection.remoteAddress;
+          ip = ip.replace(/::ffff:/gi,"").replace(/::/gi,"")
+      var data = await API.activateVoter(verify,uid,ip);
       if (data) {
         res.status(200).json({ success: true, data });
       } else {
@@ -278,7 +304,11 @@ export default {
   /* VOTING & RECEIPT */
   postData: async (req:NextApiRequest, res:NextApiResponse) => {
     try {
-      var resp = await API.postVoteData(req.body);
+      const forwarded:any = req.headers["x-forwarded-for"]
+      let ip = forwarded ? forwarded?.split(/, /)[0] : req.connection.remoteAddress;
+          ip = ip.replace(/::ffff:/gi,"").replace(/::/gi,"")
+      
+      var resp = await API.postVoteData(req.body, ip);
       res.status(200).json(resp);
     } catch (e) {
       console.log(e);

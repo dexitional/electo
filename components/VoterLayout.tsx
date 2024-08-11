@@ -1,11 +1,7 @@
 import React, { useEffect } from 'react'
 import Footer from './Footer'
 import Header from './Header'
-import MenuItem from './MenuItem'
 import {FcHome,FcBarChart,FcViewDetails,FcSupport,FcUnlock,FcShipped,FcSafe,FcMoneyTransfer,FcFilingCabinet,FcDepartment,FcDebt,FcConferenceCall,FcCurrencyExchange,FcFactory,FcPaid} from 'react-icons/fc'
-import DivideTitle from './DivideTitle'
-import PageHeader from './PageHeader'
-import SideMenu from './SideMenu'
 import { useUserStore } from '../utils/store'
 import { useRouter } from 'next/router'
 

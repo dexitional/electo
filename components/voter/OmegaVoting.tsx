@@ -89,7 +89,7 @@ export default function OmegaVoting({ setPage }: any) {
               Router.push('/voterlogin')
               useUserStore.setState({ user:null})
             }
-          }else{
+          } else{
             
               //setPageview(-1)
               //setVoter({})
@@ -113,6 +113,7 @@ export default function OmegaVoting({ setPage }: any) {
 
   const initiate = async () => {
     const resp = await fetchElectionDataByVoter(user?.tag);
+    console.log(resp)
     if (resp.success) {
       const elecs = resp.data.filter( (r:any) => r.status == 0)
       console.log(elecs)
@@ -122,6 +123,15 @@ export default function OmegaVoting({ setPage }: any) {
          setElections([...elecs])
          setElectionIndex(0);
          setEvsdata({...elecs[0].data})
+      } else {
+        // If User Have Completed All elections, Update Voter Status && Verification Status & Redirect
+        // Update Voter Status && Verification Status
+        const ac = await finalizeVote(user?.centre_id,user?.tag);
+        if(ac.success){
+          Notiflix.Notify.success('VOTE REGISTERED SUCCESSFULLY!');
+          Router.push('/voterlogin')
+          useUserStore.setState({ user:null})
+        }
       }
     }
   };
@@ -130,18 +140,15 @@ export default function OmegaVoting({ setPage }: any) {
   useEffect(() => {
     var ignore = false;
     if(!ignore){
-       changeView("next")
+      changeView("next")
     }
     return () => {
       ignore = true;
     }
   }, [voter]);
-  /**/
+  
 
-  useEffect(() => {
-   console.log(pageview)
-  }, [pageview]);
-
+  
   /*
   useEffect(() => {
     setPageview(0)
@@ -164,14 +171,9 @@ export default function OmegaVoting({ setPage }: any) {
 
   useEffect(() => {
     user && initiate();
-    console.log(evsdata)
-    console.log(evsdata)
   }, [user]);
 
-  useEffect(() => {
-    console.log(evsdata)
-  }, [evsdata]);
-  
+ 
     
   
   return (
@@ -231,7 +233,7 @@ export default function OmegaVoting({ setPage }: any) {
                  <button onClick={(e) => choose(e, row.id, (getPortfolio(row.name)?.find((r: any) => r.tag == 'skip').id))} className="p-0.5 px-2 border-2 ring-1 ring-red-900 rounded-full text-[10px] text-white font-bold bg-red-800">SKIP PORTFOLIO</button> }
                 </h2>
                 <div className="flex flex-col">
-                  <div className="flex flex-col sm:grid sm:gap-x-2 sm:grid-cols-4">
+                  <div className="flex flex-col place-center sm:grid sm:gap-x-2 sm:grid-cols-4">
                   {
                     getPortfolio(row.name)?.map((r: any, j: React.Key) => r.tag != 'skip' ? (
                       
@@ -242,14 +244,14 @@ export default function OmegaVoting({ setPage }: any) {
                       >
                         <div className="mt-2 pb-1 flex flex-col items-start space-x-6 ">
                           <div className="flex items-center justify-between">
-                            <div className="overflow-hidden flex-col text-center items-center border border-1 border-slate-200 rounded-md">
+                            <div className="overflow-hidden flex-col text-center items-center bg-white border border-1 border-slate-200 rounded-md">
                                 <img
                                   src={`/api/photos/?tag=candid&eid=${r.id}`}
                                   alt={r.name}
-                                  loading="lazy"
-                                  className="w-full h-48 object-cover transition-transform duration-200 group-hover:scale-110"
+                                  loading="eager"
+                                  className="w-full h-48 object-contain object-center transition-transform duration-200 group-hover:scale-110"
                                 />
-                                <p className="my-3 text-sm uppercase font-bold text-red-900/80">
+                                <p className="my-3 py-0.5 px-4 w-fit mx-auto bg-slate-50 rounded-xl text-sm uppercase font-bold text-red-900/80">
                                   {r.teaser}
                                 </p>
                             </div>

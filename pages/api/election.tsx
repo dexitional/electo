@@ -26,7 +26,6 @@ app.get((req,res) => {
   else if(verify) return API.fetchVerifiedByActiveCentre(req,res) // FETCH ELECTIONS OF ACTIVATED CENTRE
   else if(username) return API.fetchElectionByVoter(req,res)  // FETCH ELECTIONS BY CENTRE ID
   //else if(username && (!eid || !rid || !edata)) return API.fetchElectionByVoter(req,res)  // FETCH ELECTIONS BY CENTRE ID
-  
 })
 
 app.post((req,res) => {

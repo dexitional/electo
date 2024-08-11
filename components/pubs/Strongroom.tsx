@@ -58,7 +58,7 @@ export default function Strongroom({setPage, eid:id, ename: sname, logo}:any) {
     setTimeout(() => {
       const index = (pageview + 1) % evsdata.portfolios?.length;
       setPageview(index);
-    }, 5000);
+    }, 10000);
   };
 
   const syncData = async () => {
@@ -170,7 +170,7 @@ export default function Strongroom({setPage, eid:id, ename: sname, logo}:any) {
                                 src={`/api/photos/?tag=candid&eid=${r.id}`}
                                 alt={r.name}
                                 loading="lazy"
-                                className="h-24 w-22 p-2 border border-1 border-slate-200 rounded-md"
+                                className="h-40  p-2 border border-1 border-slate-200 rounded-md"
                               />
                               {/*
                               <Image
@@ -188,11 +188,11 @@ export default function Strongroom({setPage, eid:id, ename: sname, logo}:any) {
                                 <p className="text-sm font-medium italic uppercase text-slate-500/80">
                                   {r.teaser} {r.order_no ? <span className="font-extrabold text-lg text-blue-900/60"> - #{r.order_no}</span>:''}
                                 </p>
-                                <div className="flex space-x-2">
-                                  <span className="w-24 my-1 py-0.3 px-2 text-[1.1em] text-center text-blue-900 font-extrabold border-2 border-solid border-slate-700 rounded-full">
+                                <div className="flex flex-wrap space-x-2">
+                                  <span className="w-fit my-1 py-0.3 px-2 text-[1.1em] text-center text-blue-900 font-extrabold border-2 border-solid border-slate-700 rounded-full">
                                     {r.votes}
                                   </span>
-                                  <span className="w-24 my-1 py-0.3 px-2 text-[1em] text-center italic text-slate-800 font-semibold border-2 border-solid border-slate-700 rounded-full">
+                                  <span className="w-fit my-1 py-0.3 px-2 text-[1em] text-center italic text-slate-800 font-semibold border-2 border-solid border-slate-700 rounded-full">
                                     { electors?.length > 0 ? (
                                       (parseInt(r.votes) / electors?.length) *
                                       100

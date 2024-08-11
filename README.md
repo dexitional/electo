@@ -25,3 +25,30 @@ pnpm create next-app --example with-tailwindcss with-tailwindcss-app
 ```
 
 Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+
+Multi Centre - Replication - SRC
+Multi Centre - Coalition of results - SRC
+
+//////
+CONCEPT
+
+1. export elector data into json array
+   eg: [
+   { name, votesum, votetime, centre_name, centre_id }
+   ]
+
+2. Load and import json exported data into "coalition table"
+   eg: schemas {
+   name,
+   teaser,
+   order_no,
+   votes,
+   meta: [
+   { centre_name: 'adehye', votes: 2000 },
+   { centre_name: 'vtrust', votes: 6000 },
+   },
+   portfolio: "president"
+   }
+   NB: Order coalition results set by portfolio, order_no
+
+3. Generation Page of Final Results

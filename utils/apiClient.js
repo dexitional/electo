@@ -12,8 +12,14 @@ export const getImage = async (url, imgpath, fs) => {
   }
 };
 
-export const verifyVoter = async ({ username }) => {
-  const res = await axios.post(`/api/auth/voter`, { username });
+export const getIp = async () => {
+  const res = await axios.post(`/api/auth/ip`);
+  console.log(res.data)
+  return res?.data;
+};
+
+export const verifyVoter = async ({ username,password }) => {
+  const res = await axios.post(`/api/auth/voter`, { username,password });
   return res.data;
 };
 
@@ -73,8 +79,8 @@ export const fetchVoters = async (query) => {
   return res.data;
 };
 
-export const activateVoter = async (id) => {
-  const res = await axios.get(`/api/voters?verify=${id}`);
+export const activateVoter = async (id,uid) => {
+  const res = await axios.get(`/api/voters?verify=${encodeURIComponent(id)}&uid=${encodeURIComponent(uid)}`);
   return res.data;
 };
 

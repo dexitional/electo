@@ -38,7 +38,7 @@ export default function VoterDash() {
     <VoterLayout>
     <h3></h3>
     <div className="w-full flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:justify-center sm:space-x-6">
-        <div className="p-2 w-56 rounded border ">
+        {/* <div className="p-2 w-56 rounded border ">
             <div className="p-1 h-48 rounded bg-slate-100 flex items-center justify-center">
                {user && <img src={`/api/photos/?tag=voter&eid=${user?.tag}` || Photo.src} className="h-44 object-cover rounded-md opacity-60 overflow-hidden"/> }
             </div>
@@ -47,7 +47,7 @@ export default function VoterDash() {
                <p className="text-xs text-gray-600 font-medium">{user?.descriptor}</p>
             </div>
             <button onClick={logOut} className="w-full mt-4 py-1 rounded border-2 border-blue-900 text-sm text-blue-900 font-semibold">LOG OUT</button>
-        </div>
+        </div> */}
 
         <div className="p-4 flex-1 rounded border">
              <Switcher />

@@ -4,7 +4,7 @@ import SearchBox from './SearchBox'
 import {MdAddCircleOutline,MdKeyboardArrowRight,MdKeyboardArrowLeft} from 'react-icons/md'
 import { useUserStore } from '../utils/store';
 
-export default function PagerNew({onChange,onSubmit,keyword }: any) {
+export default function PagerNew({onChange,onSubmit,keyword,onClick }: any) {
     const router = useRouter()
 
     const prevPage = () => {
@@ -26,12 +26,17 @@ export default function PagerNew({onChange,onSubmit,keyword }: any) {
             </button>
             */}
             <div className="flex space-x-1">
-                <button onClick={prevPage} className="rounded bg-green-50 text-slate-600 text-xs border border-slate-300">
+                {/* <button onClick={prevPage} className="rounded bg-green-50 text-slate-600 text-xs border border-slate-300">
                    <MdKeyboardArrowLeft className="h-6 w-6 text-slate-600" />
-                </button>
+                </button> */}
                 {/*<button className="px-2 py-2 rounded-md bg-slate-50 text-slate-600 text-xs font-semibold border">Page {pageNo}</button>*/}
-                <button onClick={nextPage}  className="rounded bg-green-50 text-slate-600 text-xs font-semibold border border-slate-300">
+                {/* <button onClick={nextPage}  className="rounded bg-green-50 text-slate-600 text-xs font-semibold border border-slate-300">
                    <MdKeyboardArrowRight className="h-6 w-6 text-slate-600" />
+                </button> */}
+
+            <button onClick={onClick}  className="px-2 py-1 rounded bg-blue-50 flex items-center text-gray-500 text-xs font-semibold border border-slate-300">
+                   <MdKeyboardArrowLeft className="h-5 w-5 text-slate-600" />
+                   <span>GO BACK</span>
                 </button>
             </div>
         </div>

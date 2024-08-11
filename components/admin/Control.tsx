@@ -114,6 +114,15 @@ export default function Controls({setPage}: any) {
                </div>
             </span>
             </React.Fragment>
+            <React.Fragment>
+            <span className="col-span-2 font-medium text-left text-lg self-center">ELECTION DATA</span>
+            <span className={`col-span-1 text-center font-bold`}></span>
+            <span className="col-span-1">
+               <div className="flex items-center justify-center space-x-1 space-y-1 flex-wrap sm:flex-nowrap">
+               <button onClick={()=> setPage('list')} className="p-1 px-2 w-16 inline-block border border-blue-900 bg-slate-50 text-blue-900 text-xs uppercase font-medium rounded"><b>EXPORT</b></button> 
+               </div>
+            </span>
+            </React.Fragment>
            
         </div>
     </Table>

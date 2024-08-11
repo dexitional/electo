@@ -1,6 +1,6 @@
 import axios from "axios";
-import https from 'https'
 import fs from 'fs';
+import https from 'https';
 import { getImage } from "../../utils/apiClient";
 
 export const db = require('../config/database');
@@ -16,19 +16,52 @@ module.exports = {
       }
    },
 
-   verifyVoter : async (username:string) => {
-      var res;
-      const centre = await db.query("select * from electo.centre where `default` = 1");
-      if(centre && centre.length > 0)
-         res = await db.query("select v.*,m.voted as vote_status from electo.voter v left join electo.voter m on (v.tag = m.tag and v.centre_id = m.centre_id) where v.tag = '"+username+"' and v.centre_id = "+centre[0].id);
-      return res && res[0];
+  //  verifyVoter : async (username:string) => {
+  //     var res;
+  //     const centre = await db.query("select * from electo.centre where `default` = 1");
+  //     if(centre && centre.length > 0)
+  //       //  res = await db.query("select v.*,m.voted as vote_status from electo.voter v left join electo.elector m on (v.tag = m.tag and v.centre_id = m.centre_id) where v.tag = '"+username+"' and v.centre_id = "+centre[0].id);
+  //     res = await db.query("select v.*,m.voted as vote_status from electo.voter v left join electo.elector m on (v.tag = m.tag and v.centre_id = m.centre_id) where v.tag = '"+username+"' and v.centre_id = "+centre[0].id);
+  //     return res && res[0];
+  //  },
+
+   verifyVoter : async (username:string, password: string, ip: string) => {
+        var res;
+        password = password?.replace(/\//gi,"")?.replace(/\-/gi,"")?.trim();
+        if(password?.length != 8){
+          // Log Action
+          const log = { regno: username, action: 'LOGIN', status: 'FAIL', ip , meta: JSON.stringify( { username, password })}
+          await db.query("insert into electo.log set ?",log);
+          return res;
+        }
+        
+        const centre = await db.query("select * from electo.centre where `default` = 1");
+        if(centre && centre.length > 0)
+        res = await db.query("select v.*,v.voted as vote_status from electo.voter v left join electo.elector m on (v.tag = m.tag) where v.tag = ? and v.password = ? and v.centre_id = "+centre[0].id,[username,password]);
+        if(res?.length){
+          const user = res && res[0];
+           // Log Activity
+           const log = { regno: username, action: 'LOGIN', status: 'SUCCESS', ip , meta: JSON.stringify({ username, password, message: `${user.vote_status == 1 ? 'You have Voted': user.logged_in == 1 ? 'You are already Logged In': 'Login success' }` })}
+           await db.query("insert into electo.log set ?", log);
+           // Update Login Status
+           if(user.vote_status == 0 && user.verified == 1)
+              await db.query("update electo.voter set logged_in = 1, logged_in_at = now() where tag = ?",[username]);
+           // Return Response
+           return res && res[0];
+        } else {
+          // Log Action
+          const log = { regno: username, action: 'LOGIN', status: 'FAIL', ip , meta: JSON.stringify( { username, password })}
+          await db.query("insert into electo.log set ?",log);
+        }
+        return res
+       
    },
 
    fetchTest : async () => {
       var res;
       const centre = await db.query("select * from electo.centre where `default` = 1");
       if(centre && centre.length > 0) res = centre[0]
-        return res;
+      return res;
    },
 
 
@@ -153,18 +186,17 @@ module.exports = {
       if(er && er.length > 0){
         let count = 0
         const httpsAgent = new https.Agent({ rejectUnauthorized: false });
-        const rs = await axios.get(`https://ehub.ucc.edu.gh/zeus/evs/loadcentredata/${er[0].tag}/regular`,{httpsAgent})
+        const rs = await axios.get(`${process.env.API_URL}/api/evs/loadcentredata/${er[0].tag}/regular`,{httpsAgent})
         if(rs && rs.data.length > 0){
           const voters = rs.data;
-          console.log(voters)
           
           for(const vs of voters){
-            const m =  await db.query("select * from electo.voter where tag = '"+vs.regno+"' and centre_id ="+er[0].id);
-            if(m && m.length == 0){
-              const dt = { tag:vs.regno, name:vs.name, descriptor: vs.programme, centre_id:er[0].id, status:1, voted:0 }
-              const et = await db.query("insert into electo.voter set ?", dt);
+            //const m =  await db.query("select * from electo.voter where tag = '"+vs.regno+"' and centre_id ="+er[0].id);
+            //if(m && m.length == 0){
+              const dt = { tag:vs.regno, name:vs.name, descriptor: vs.programme, password: vs.dob, centre_id:er[0]?.id, status:1, voted:0 }
+              const et = await db.query("replace into electo.voter set ?", dt);
               if(et && et.affectRows > 0) count+=1
-            }
+           // }
           }
         }
         if(count > 0){
@@ -185,28 +217,28 @@ module.exports = {
 
   
   loadCentrePhotos : async (cid:string) => {
-    var res;
-    const m =  await db.query("select * from electo.voter where centre_id ="+cid);
-    if(m && m.length > 0){
-      let count = 0;
-      const dest = `./public/upload/voter/`
-      for(var vs of m){
-        const cleanTag = vs.tag.replaceAll(/\//gi,"").toLowerCase()+'.jpg'
-        const imgurl = `https://ehub.ucc.edu.gh/api/photos/?tag=${encodeURIComponent(vs.tag)}`
-        
-        console.log(cleanTag,imgurl)
-        const rs = await getImage(imgurl,dest+cleanTag,fs)
-        count+=1
+      var res;
+      const m =  await db.query("select * from electo.voter where centre_id ="+cid);
+      if(m && m.length > 0){
+        let count = 0;
+        const dest = `./public/upload/voter/`
+        for(var vs of m){
+          const cleanTag = vs.tag.replaceAll(/\//gi,"").toLowerCase()+'.jpg'
+          const imgurl = `${process.env.API_URL}/api/photos/?tag=${encodeURIComponent(vs.tag)}`
+          
+          console.log(cleanTag,imgurl)
+          const rs = await getImage(imgurl,dest+cleanTag,fs)
+          count+=1
+        }
       }
-    }
-    return res ;
-},
+      return res ;
+  },
 
 
 
    fetchElectionByCentre : async (cid:string) => {
       var res;
-      const et = await db.query("select en.* from electo.election en where en.id = "+cid);
+      const et = await db.query("select en.* from electo.election en where en.live_status = 1 and en.id = "+cid);
       if(et && et.length > 0) return et;
       return res;
    },
@@ -215,7 +247,7 @@ module.exports = {
       var res;
       const ct = await db.query("select * from electo.centre en where `default` = 1");
       if(ct && ct.length > 0){
-         const et = await db.query("select en.* from electo.election en where en.centre_id = "+ct[0].id);
+         const et = await db.query("select en.* from electo.election en where en.live_status = 1 and en.centre_id = "+ct[0].id);
          if(et && et.length > 0) return et;
       }
       return res;
@@ -251,31 +283,21 @@ module.exports = {
    fetchElectionDataById : async (eid:string,tag:string) => {
     var data = <any>{};
     // Portfolio data
-    var res = await db.query(
-      "select * from electo.portfolio where status = 1 and election_id = " + eid
-    );
+    var res = await db.query("select * from electo.portfolio where status = 1 and election_id ="+eid);
     if (res && res.length > 0) data.portfolios = res;
     // Candidate data
-    var res = await db.query(
-      "select c.*,p.name as portfolio,p.id as pid from electo.candidate c left join electo.portfolio p on c.portfolio_id = p.id where c.status = 1 and p.election_id = " +
-        eid
-    );
+    var res = await db.query("select c.*,p.name as portfolio,p.id as pid from electo.candidate c left join electo.portfolio p on c.portfolio_id = p.id where c.status = 1 and p.election_id = "+eid);
     if (res && res.length > 0) data.candidates = res;
     // Election data
     var res = await db.query(
       "select e.* from electo.election e where e.id = "+eid);
     if (res && res.length > 0) data.election = res;
     // Voters data
-    var res = await db.query(
-      "select * from electo.elector where election_id = " + eid);
+    var res = await db.query("select * from electo.elector where election_id ="+eid);
     if (res && res.length > 0) data.electors = res;
 
     // Voters data
-    var res = await db.query(
-      "select * from electo.elector where election_id = " + eid+" and tag = '" +
-      tag +
-      "'"
-    );
+    var res = await db.query("select * from electo.elector where election_id = " + eid+" and tag = '"+tag+"'");
     if (res && res.length > 0) data.voter = res[0];
     
     return data;
@@ -350,9 +372,9 @@ module.exports = {
       return null;
     },
 
-    postVoteData: async (data:any) => {
+    postVoteData: async (data:any, ip:string) => {
       const { id, tag, votes, name } = data;
-  
+      
       // START TRANSACTION
       //await db.query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
       //await db.beginTransaction();
@@ -401,6 +423,7 @@ module.exports = {
                 vote_time: new Date(),
                 name,
                 tag,
+                ip,
                 election_id: id,
               };
               const ins = await db.query("insert into electo.elector set ?", dm);
@@ -448,8 +471,10 @@ module.exports = {
       var res;
       if (tag == "logo") {
         res = await db.query("select logo as path from electo.election where id = ?", [eid]);
+      }else if (tag == "centre") {
+         res = [{path:`./upload/logos/${eid.split(' ').join('').toLowerCase()}.jpg`}]
       }else if (tag == "voter") {
-         res = [{path:`./upload/voter/${eid.split('/').join('').toLowerCase()}.jpg`}]
+        res = [{path:`./upload/voter/${eid.split('/').join('').toLowerCase()}.jpg`}]
       }else if (tag == "candid") {
         res = await db.query("select photo as path from electo.candidate where id = ?", [eid]);
       }
@@ -468,16 +493,20 @@ module.exports = {
    },
 
    
-   activateVoter: async (id:string) => {
-    const sql = "update electo.voter set ? where id = " + id;
-    const res = await db.query(sql, { verified: 1, verified_at: new Date() });
-    return res;
-  },
+   activateVoter: async (id:string,uid:string,ip:string) => {
+      const sql = "update electo.voter set ? where tag = ?";
+      const res = await db.query(sql, [{ verified: 1, verified_at: new Date() }, id ]);
+      // Log Activity
+      // const log = { regno: id, action: 'VERIFY', status: 'SUCCESS', ip, action_by: uid, meta: JSON.stringify({ voter: id, verified: 1, verified_at: new Date(), uid })}
+      const log = { regno: id, action: 'VERIFY', status: 'SUCCESS', ip, action_by: uid, meta: null}
+      await db.query("insert into electo.log set ?", log);
+      return res;
+   },
 
   postVoteStatus: async (id:string,tag:string) => {
-    const sql = "update electo.voter set ? where tag = '"+tag+"' and centre_id = " + id;
-    const res = await db.query(sql, { verified: 0, voted: 1 });
-    return res;
+      const sql = "update electo.voter set ? where tag = ? and centre_id =  ?";
+      const res = await db.query(sql, [{ verified: 0, logged_in: 0, voted: 1 },tag,id ]);
+      return res;
   },
 
   
@@ -490,8 +519,8 @@ module.exports = {
     var res;
     const { id, data:body } = data;
     if(data){
-      const sql = "update electo.election set ? where id = "+id;
-      const res = await db.query(sql, body);
+      const sql = "update electo.election set ? where id =  ?";
+      const res = await db.query(sql, [body,id]);
     } 
     return res;
   },
